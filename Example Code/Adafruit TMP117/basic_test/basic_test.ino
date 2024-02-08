@@ -27,10 +27,17 @@ void setup(void) {
 }
 void loop() {
 
-  sensors_event_t temp; // create an empty event to be filled
-  tmp117.getEvent(&temp); //fill the empty event object with the current measurements
-  Serial.print("Temperature  "); Serial.print(temp.temperature);Serial.println(" degrees C");
-  Serial.println("");
+ sensors_event_t temp; // create an empty event to be filled
+tmp117.getEvent(&temp); // fill the empty event object with the current measurements
 
-  delay(1000);
+// Convert Celsius to Fahrenheit
+float temperatureFahrenheit = (temp.temperature * 9 / 5) + 32;
+
+Serial.print("Temperature  "); 
+Serial.print(temperatureFahrenheit); 
+Serial.println(" degrees F");
+Serial.println("");
+
+delay(1000);
+
 }
