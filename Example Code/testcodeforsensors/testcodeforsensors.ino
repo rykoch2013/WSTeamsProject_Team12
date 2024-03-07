@@ -6,20 +6,10 @@
 Adafruit_TMP117 tmp117;
 Adafruit_LTR303 ltr;
 
-BLEService sensorService("180A");
-BLEStringCharacteristic temperatureCharacteristic("2A6E", BLERead | BLENotify, 20); // Set the maximum length of the string
-BLEStringCharacteristic lightCharacteristic("2A76", BLERead | BLENotify, 20); // Set the maximum length of the string
-
 void setup() {
   Serial.begin(115200);
   while (!Serial) {
     delay(10); // wait for serial port to open
-  }
-
-  // Initialize BLE
-  if (!BLE.begin()) {
-    Serial.println("Failed to initialize BLE!");
-    while (1);
   }
 
   // Initialize TMP117
@@ -43,18 +33,6 @@ void setup() {
   ltr.setIntegrationTime(LTR3XX_INTEGTIME_50);
   // Set measurement rate of 50ms (see advanced demo for all options!
   ltr.setMeasurementRate(LTR3XX_MEASRATE_50);
-
-  // Start BLE
-  BLE.setLocalName("SensorDevice");
-  BLE.setAdvertisedService(sensorService);
-  sensorService.addCharacteristic(temperatureCharacteristic);
-  sensorService.addCharacteristic(lightCharacteristic);
-  BLE.addService(sensorService);
-  temperatureCharacteristic.writeValue("0");
-  lightCharacteristic.writeValue("0");
-  BLE.advertise();
-
-  Serial.println("BLE device active, waiting for connections...");
 }
 
 void loop() {
@@ -65,8 +43,9 @@ void loop() {
   // Convert Celsius to Fahrenheit
   float temperatureFahrenheit = (temp.temperature * 9 / 5) + 32;
 
-  // Update BLE characteristic
-  temperatureCharacteristic.writeValue(String(temperatureFahrenheit));
+  Serial.print("Temperature: ");
+  Serial.print(temperatureFahrenheit);
+  Serial.println(" degrees F");
 
   // LTR303 light sensor measurement
   bool valid;
@@ -75,8 +54,8 @@ void loop() {
   if (ltr.newDataAvailable()) {
     valid = ltr.readBothChannels(visible_plus_ir, infrared);
     if (valid) {
-      // Update BLE characteristic
-      lightCharacteristic.writeValue(String(visible_plus_ir));
+      Serial.print("Visible + IR: ");
+      Serial.println(visible_plus_ir);
     }
   }
 
@@ -89,4 +68,5 @@ void loop() {
   delay(500);
 
   delay(1000); // Adjust delay as needed
+
 }
