@@ -1,30 +1,24 @@
 #include <Wire.h>
 #include <Adafruit_TMP117.h>
 #include <Adafruit_LTR329_LTR303.h>
-#include <ArduinoBLE.h>
 #include <AccelStepper.h>
+#include <ArduinoBLE.h>
+#include "Arduino_LED_Matrix.h"
 
 AccelStepper stepper1(1, 2, 3);// direction Digital 2 (CCW), pulses Digital 3 (CLK)
 AccelStepper stepper2(1, 4, 5);// direction Digital 4 (CCW), pulses Digital 5 (CLK)
 
+
 Adafruit_TMP117 tmp117;
 Adafruit_LTR303 ltr;
-
-BLEService sensorService("180A");
-BLEStringCharacteristic temperatureCharacteristic("2A6E", BLERead | BLENotify, 20); // Set the maximum length of the string
-BLEStringCharacteristic lightCharacteristic("2A76", BLERead | BLENotify, 20); // Set the maximum length of the string
+ArduinoLEDMatrix matrix;
 
 void setup() {
   Serial.begin(115200);
   while (!Serial) {
     delay(10); // wait for serial port to open
   }
-
-  // Initialize BLE
-  if (!BLE.begin()) {
-    Serial.println("Failed to initialize BLE!");
-    while (1);
-  }
+  matrix.begin();
 
   // Initialize TMP117
   if (!tmp117.begin()) {
@@ -48,25 +42,25 @@ void setup() {
   // Set measurement rate of 50ms (see advanced demo for all options!
   ltr.setMeasurementRate(LTR3XX_MEASRATE_50);
 
-  // Start BLE
-  BLE.setLocalName("SensorDevice");
-  BLE.setAdvertisedService(sensorService);
-  sensorService.addCharacteristic(temperatureCharacteristic);
-  sensorService.addCharacteristic(lightCharacteristic);
-  BLE.addService(sensorService);
-  temperatureCharacteristic.writeValue("0");
-  lightCharacteristic.writeValue("0");
-  BLE.advertise();
-
-  Serial.println("BLE device active, waiting for connections...");
-
    // put your setup code here, to run once:
-    stepper1.setMaxSpeed(1600); //SPEED = Steps / second
-    stepper1.setAcceleration(800); //ACCELERATION = Steps /(second)^2
+    stepper1.setMaxSpeed(5000); //SPEED = Steps / second
+    stepper1.setAcceleration(3600); //ACCELERATION = Steps /(second)^2
   
-    stepper2.setMaxSpeed(1600); //SPEED = Steps / second
-    stepper2.setAcceleration(800); //ACCELERATION = Steps /(second)^2
+    stepper2.setMaxSpeed(5000); //SPEED = Steps / second
+    stepper2.setAcceleration(3600); //ACCELERATION = Steps /(second)^2
 }
+
+const uint32_t happy[] = {
+    0x19819,
+    0x80000001,
+    0x81f8000
+};
+const uint32_t heart[] = {
+    0x3184a444,
+    0x44042081,
+    0x100a0040
+};
+
 
 void loop() {
   // TMP117 temperature measurement
@@ -76,8 +70,9 @@ void loop() {
   // Convert Celsius to Fahrenheit
   float temperatureFahrenheit = (temp.temperature * 9 / 5) + 32;
 
-  // Update BLE characteristic
-  temperatureCharacteristic.writeValue(String(temperatureFahrenheit));
+  Serial.print("Temperature: ");
+  Serial.print(temperatureFahrenheit);
+  Serial.println(" degrees F");
 
   // LTR303 light sensor measurement
   bool valid;
@@ -86,18 +81,23 @@ void loop() {
   if (ltr.newDataAvailable()) {
     valid = ltr.readBothChannels(visible_plus_ir, infrared);
     if (valid) {
-      // Update BLE characteristic
-      lightCharacteristic.writeValue(String(visible_plus_ir));
+      Serial.print("Visible + IR: ");
+      Serial.println(visible_plus_ir);
     }
   }
+  
 
-  // code to simulate lower and raise
-  if (temperatureFahrenheit > 80 || visible_plus_ir > 100) {
-    Serial.println("Simulate lower");
-  } else {
-    Serial.println("Simulate raise");
-  }
+  stepper1.runToNewPosition(50000);
+  stepper2.runToNewPosition(60000);
+  matrix.loadFrame(happy);
+  delay(500);
+
+  matrix.loadFrame(heart);
+  delay(500);
+  
+
   delay(500);
 
   delay(1000); // Adjust delay as needed
+
 }
