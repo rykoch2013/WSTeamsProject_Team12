@@ -85,15 +85,26 @@ void loop() {
 
     client.println("<p>");
 
-    client.print("Temperature: <span style=\"color: red;\">");
+    client.print("Current Temperature: <span style=\"color: red;\">");
     float temperature = getTemperature();
     client.print(temperature, 2);
     client.println("&deg;C</span>");
 
-    client.print("Light: <span style=\"color: blue;\">");
+    client.print("Current Light: <span style=\"color: blue;\">");
     float light = getLight();
     client.print(light, 2);
+    client.println(" Lux</span>");
+
+    client.print("<br>");
+    client.print("Desired Temperature: <span style=\"color: red;\">");
+    float desTemperature = getTemperature();
+    client.print(desTemperature, 2);
     client.println("&deg;C</span>");
+
+    client.print("Desired Light: <span style=\"color: blue;\">");
+    float desLight = getLight();
+    client.print(desLight, 2);
+    client.println(" Lux</span>");
 
     client.println("</p>");
     client.println("</html>");
