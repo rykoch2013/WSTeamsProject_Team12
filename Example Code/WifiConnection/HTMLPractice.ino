@@ -30,6 +30,14 @@ float getLight() {
   return light_x100 / 100;
 }
 
+float getDesTemp() {
+  return 75.00;
+}
+
+float getDesLight() {
+  return 48.00;
+}
+
 
 void setup() {
   localWebSetup();
@@ -109,12 +117,12 @@ void localWebService(){
 
     client.print("<br>");
     client.print("Desired Temperature: <span style=\"color: red;\">");
-    float desTemperature = getTemperature();
+    float desTemperature = getDesTemp();
     client.print(desTemperature, 2);
     client.println("&deg;C</span>");
 
     client.print("Desired Light: <span style=\"color: blue;\">");
-    float desLight = getLight();
+    float desLight = getDesLight();
     client.print(desLight, 2);
     client.println(" Lux</span>");
 
