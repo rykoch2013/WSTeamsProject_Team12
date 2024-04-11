@@ -23,6 +23,8 @@ float getTemperature() {
   float temp_x100 = random(0, 10000);  // a ramdom value from 0 to 10000
   return temp_x100 / 100;              // return the simulated temperature value from 0 to 100 in float
 }
+
+
 float getLight() {
   float light_x100 = random(0, 10000);
   return light_x100 / 100;
@@ -30,6 +32,15 @@ float getLight() {
 
 
 void setup() {
+  localWebSetup();
+}
+
+
+void loop() {
+  localWebService();
+}
+
+void localWebSetup() {
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
 
@@ -50,10 +61,11 @@ void setup() {
   server.begin();
   // you're connected now, so print out the status:
   Serial.println("Connected");
-  printWifiStatus();
+  printWifiStatus();  
+
 }
 
-void loop() {
+void localWebService(){
   // listen for incoming clients
   WiFiClient client = server.available();
   if (client) {
@@ -116,7 +128,7 @@ void loop() {
 
     // close the connection:
     client.stop();
-  }
+  }  
 }
 
 void printWifiStatus() {
