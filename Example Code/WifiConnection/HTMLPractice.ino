@@ -17,12 +17,17 @@ int status = WL_IDLE_STATUS;
 WiFiServer server(80);
 
 float getTemperature() {
-  return 26.9456;
+  //return 26.9456;
   // YOUR SENSOR IMPLEMENTATION HERE
   // simulate the temperature value
   float temp_x100 = random(0, 10000);  // a ramdom value from 0 to 10000
   return temp_x100 / 100;              // return the simulated temperature value from 0 to 100 in float
 }
+float getLight() {
+  float light_x100 = random(0, 10000);
+  return light_x100 / 100;
+}
+
 
 void setup() {
   //Initialize serial and wait for port to open:
@@ -83,6 +88,11 @@ void loop() {
     client.print("Temperature: <span style=\"color: red;\">");
     float temperature = getTemperature();
     client.print(temperature, 2);
+    client.println("&deg;C</span>");
+
+    client.print("Light: <span style=\"color: blue;\">");
+    float light = getLight();
+    client.print(light, 2);
     client.println("&deg;C</span>");
 
     client.println("</p>");
