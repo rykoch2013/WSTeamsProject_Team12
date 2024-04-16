@@ -18,7 +18,6 @@ const char index_html[] PROGMEM = R"rawliteral(<!DOCTYPE html><html lang="en"><h
 
 WiFiServer server(80);
 
-uint8_t d_mode;
 float sensorTemp, sensorLight;
 
 //Main function code, internal functions to operate Wifi & Webpage
