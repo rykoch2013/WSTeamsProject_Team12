@@ -18,8 +18,19 @@ const char index_html[] PROGMEM = R"rawliteral(<!DOCTYPE html><html lang="en"><h
 
 WiFiServer server(80);
 
-int f_light, f_temp;
+//int f_light, f_temp;
 uint8_t d_mode;
+
+//Main function code, internal functions to operate Wifi & Webpage
+void setup()
+{
+  wifiSetup();
+}
+
+void loop()
+{
+  wifiLoop();
+}
 
 void parseData(String jsonString)
 {
@@ -38,6 +49,7 @@ void parseData(String jsonString)
     Serial.print("Temperature: ");
     Serial.println(temperature);
   }
+
   else if(jsonString.indexOf("light") != -1)
   {
     int posLight = jsonString.indexOf("light") + 7;
@@ -50,6 +62,7 @@ void parseData(String jsonString)
     Serial.print("Light: ");
     Serial.println(light);
   }
+
   else if(jsonString.indexOf("mode") != -1)
   {
     int posMode = jsonString.indexOf("mode") + 7;
@@ -88,6 +101,7 @@ void parseData(String jsonString)
   } 
 }
 
+//for sensor temp readings
 float getTemperature()
 {
   // return 26.9456;
@@ -96,6 +110,8 @@ float getTemperature()
   float temp_x100 = random(0, 10000); // a ramdom value from 0 to 10000
   return temp_x100 / 100;             // return the simulated temperature value from 0 to 100 in float
 }
+
+//for sensor Light readings
 float getLight()
 {
   float light_x100 = random(0, 10000);
@@ -112,8 +128,7 @@ String getData()
   return String("{\"temperature\": ") + s_temp + String(", \"light\": ") + s_light + String("}");
 }
 
-void setup()
-{
+void wifiSetup(){
   // Initialize serial and wait for port to open:
   Serial.begin(9600);
 
@@ -136,11 +151,13 @@ void setup()
   // you're connected now, so print out the status:
   Serial.println("Connected");
   printWifiStatus();
+
 }
 
-void loop()
-{
-  // listen for incoming clients
+
+
+void wifiLoop(){
+// listen for incoming clients
   WiFiClient client = server.available();
   if (client)
   {
@@ -242,6 +259,7 @@ void loop()
       }
     }
   }
+
 }
 
 void printWifiStatus()
