@@ -19,6 +19,7 @@ const char index_html[] PROGMEM = R"rawliteral(<!DOCTYPE html><html lang="en"><h
 WiFiServer server(80);
 
 float sensorTemp, sensorLight;
+float userTemp, userLight; //Currently Unused. Please look through code and rename
 
 //Main function code, internal functions to operate Wifi & Webpage
 void setup()
@@ -103,8 +104,6 @@ void parseData(String jsonString)
 //for sensor temp readings
 float getTemperature()
 {
-  // return 26.9456;
-  //  YOUR SENSOR IMPLEMENTATION HERE
   //  simulate the temperature value
   float temp_x100 = random(0, 10000); // a ramdom value from 0 to 10000
   return temp_x100 / 100;             // return the simulated temperature value from 0 to 100 in float
@@ -113,8 +112,17 @@ float getTemperature()
 //for sensor Light readings
 float getLight()
 {
-  float light_x100 = random(0, 10000);
+  //  simulate the light value
+  float light_x100 = random(0, 10000); 
   return light_x100 / 100;
+}
+
+float getUserLight() {
+  return userLight;
+}
+
+float getUserTemp() {
+  return userTemp;
 }
 
 //Display Sensor Data
