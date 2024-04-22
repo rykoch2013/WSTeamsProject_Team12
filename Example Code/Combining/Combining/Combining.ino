@@ -15,10 +15,15 @@ AccelStepper stepper2(1, 4, 5);// direction Digital 4 (CCW), pulses Digital 5 (C
 Adafruit_TMP117 tmp117;
 Adafruit_LTR303 ltr;
 ArduinoLEDMatrix matrix;
+
+//Blind Positions
+int perm_Lower = 85000;
+int perm_Raise = -85000;
+int BO_Raise = -63000;
+int BO_Lower = 63000;
+
 int test = 0;
 
-
-//Fun Display
 
 
 void setup() {
@@ -141,4 +146,51 @@ void stepperLoop() {
   delay(500);
 
 
+}
+
+void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
+    int blackout_position = 0;
+    int permeable_position = 0;
+
+    // Check temperature conditions
+    switch (temperatureFahrenheit) {
+        case 70 ... 74:
+            permeable_position = perm_Lower; // Lower permeable to home
+            break;
+        case 75 ... 100:
+            blackout_position = BO_Lower; // Lower blackout to home
+            break;
+        case 1 ... 69:
+            blackout_position = BO_Raise;
+            permeable_position = perm_Raise;
+            break;
+        default:
+            // Temperature is below 70, raise all to up position
+            blackout_position = 0;
+            permeable_position = 0;
+            break;
+    }
+
+    // Check visible_plus_ir conditions
+    switch (visible_plus_ir) {
+        case 9000 ... 15000:
+            blackout_position = BO_Lower; // Lower blackout to home
+            break;
+        case 5000 ... 8999:
+            permeable_position = perm_Lower; // Lower permeable to home
+            break;
+        case 0:
+            permeable_position = perm_Raise; // Raise permeable to up position
+            break;
+        default:
+            if (visible_plus_ir < 50)
+                blackout_position = BO_Raise; // Raise blackout to up position
+            break;
+    }
+
+    // Execute commands for controlling blinds based on positions
+    if (blackout_position != 0)
+        stepper1.runToNewPosition(blackout_position);
+    if (permeable_position != 0)
+        stepper2.runToNewPosition(permeable_position);
 }
