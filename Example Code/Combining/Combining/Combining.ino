@@ -131,17 +131,6 @@ void stepperSetup() {
   
     stepper2.setMaxSpeed(5000); //SPEED = Steps / second
     stepper2.setAcceleration(3600); //ACCELERATION = Steps /(second)^2
-
-/*
-  stepper1.runToNewPosition(-63000); // blackout
-  stepper2.runToNewPosition(-85000); // permeable
-
-  stepper1.runToNewPosition(0);
-  stepper2.runToNewPosition(0);
-  */
-  
-
-
 }
 
 void stepperLoop() {
@@ -217,12 +206,6 @@ void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
     // Execute commands for controlling blinds based on positions
 
     changeBlindPosition(blackout_position, permeable_position);
-    /*
-    if (blackout_position != 0)
-        stepper1.runToNewPosition(blackout_position);
-    if (permeable_position != 0)
-        stepper2.runToNewPosition(permeable_position);
-    */
 }
 
 void changeBlindPosition(int blackout_position, int permeable_position) {
@@ -236,12 +219,7 @@ void changeBlindPosition(int blackout_position, int permeable_position) {
 
 //WIFI Code
 void parseData(String jsonString)
-{ /*possible responses to process
-    {"temp": 75}
-    {"light": 50}
-    {"mode": 0}
-  */
-
+{ 
   if(jsonString.indexOf("temp") != -1)
   {// is something like {"temp": 75}
     int posTemp = jsonString.indexOf("temp") + 6;       
@@ -390,9 +368,6 @@ void wifiLoop(){
 
         if (HTTP_header.equals("\r")) // the end of HTTP request
           break;
-
-//        Serial.print("<< ");
-//        Serial.println(HTTP_header); // print HTTP request to Serial Monitor
       }
     }
 
