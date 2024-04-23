@@ -167,8 +167,11 @@ void stepperLoop() {
 }
 
 void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
+    //controlBlinds(int temperatureFahrenheit, int visible_plus_ir, int userDesiredTemp, int userDesiredLight)
+    //Need to incorperate into switch statements w/o breaking things.
     int blackout_position = 0;
     int permeable_position = 0;
+
 
     // Check temperature conditions
     switch (temperatureFahrenheit) {
@@ -207,6 +210,17 @@ void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
     }
 
     // Execute commands for controlling blinds based on positions
+
+    changeBlindPosition(blackout_position, permeable_position);
+    /*
+    if (blackout_position != 0)
+        stepper1.runToNewPosition(blackout_position);
+    if (permeable_position != 0)
+        stepper2.runToNewPosition(permeable_position);
+    */
+}
+
+void changeBlindPosition(int blackout_position, int permeable_position) {
     if (blackout_position != 0)
         stepper1.runToNewPosition(blackout_position);
     if (permeable_position != 0)
@@ -225,7 +239,7 @@ void parseData(String jsonString)
   */
   if(jsonString.indexOf("temp") != -1)
   {// is something like {"temp": 75}
-    int posTemp = jsonString.indexOf("temp") + 6;
+    int posTemp = jsonString.indexOf("temp") + 6;       
     String tempString = jsonString.substring(posTemp);
     int commaTemp = tempString.indexOf(",");
     tempString = tempString.substring(0, commaTemp);
@@ -237,6 +251,9 @@ void parseData(String jsonString)
 
     Serial.print("Temperature: ");
     Serial.println(userTemp);
+
+    //Good spot for sensor data
+
   }
 
   else if(jsonString.indexOf("light") != -1)
@@ -247,6 +264,8 @@ void parseData(String jsonString)
     lightString = lightString.substring(0, commaLight);
     
     userLight = lightString.toInt(); // received light value
+
+    //good spot for sensor data
 
     Serial.print("Light: ");
     Serial.println(userLight);
@@ -267,21 +286,27 @@ void parseData(String jsonString)
       case 0:
       {
         Serial.println("AUTO");
+        //run sensor comparison
       }
       break;
       case 1:
       {
         Serial.println("UP");
+        //ALL UP
+
       }
       break;
       case 2:
       {
         Serial.println("SEMI");
+        //BO UP
+        //SEMI DOWN
       }
       break;
       case 3:
       {
         Serial.println("BLACKOUT");
+        //ALL DOWN
       }
       break;
       default:
