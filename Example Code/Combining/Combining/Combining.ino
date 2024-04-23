@@ -20,6 +20,7 @@ WiFiServer server(80);
 int sensorTemp, sensorLight;
 int userTemp, userLight; //Currently Unused. Please look through code and rename
 uint8_t userMode;
+bool modechange = false;
 
 
 //Stepper & Sensor Controls
@@ -66,6 +67,26 @@ const uint32_t heart[] = {
 void loop() {
     stepperLoop();
     wifiLoop();
+
+    if (modechange)
+    {
+      Serial.print("Mode: ");
+      if (userMode == 0) {
+          Serial.println("AUTO");
+          
+      } else if (userMode == 1) {
+          Serial.println("UP");
+          changeBlindPosition(BO_Raise, perm_Raise);
+      } else if (userMode == 2) {
+          Serial.println("SEMI");
+          changeBlindPosition(BO_Raise, home_Position);
+
+      } else if (userMode == 3) {
+          Serial.println("BLACKOUT");
+          changeBlindPosition(home_Position, home_Position);
+      }
+      modechange = false;
+    }
 }
 
 void stepperSetup() {
@@ -265,23 +286,7 @@ void parseData(String jsonString)
     modeString = modeString.substring(0, commaMode);
     
     userMode = modeString.toInt(); // received mode value
-
-    Serial.print("Mode: ");
-    if (userMode == 0) {
-        Serial.println("AUTO");
-        
-    } else if (userMode == 1) {
-        Serial.println("UP");
-        changeBlindPosition(BO_Raise, perm_Raise);
-    } else if (userMode == 2) {
-        Serial.println("SEMI");
-        changeBlindPosition(BO_Raise, home_Position);
-
-    } else if (userMode == 3) {
-        Serial.println("BLACKOUT");
-        changeBlindPosition(home_Position, home_Position);
-    }
-    
+    modechange = true;
   } 
 }
 
