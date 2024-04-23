@@ -40,6 +40,7 @@ int BO_Raise = -60000;
 int blackout_position;
 int permeable_position;
 float temperatureFahrenheit;
+uint16_t visible_plus_ir, infrared;
 int test = 0;
 
 
@@ -124,46 +125,8 @@ void stepperSetup() {
 
 void stepperLoop() {
 
-temperatureFahrenheit = sensorTemperatureData();
-/*
-      // TMP117 temperature measurement
-  sensors_event_t temp;
-  tmp117.getEvent(&temp);
-
-  // Convert Celsius to Fahrenheit
-  float temperatureFahrenheit = (temp.temperature * 9 / 5) + 32;
-
-  Serial.print("Temperature: ");
-  Serial.print(temperatureFahrenheit);
-  Serial.println(" degrees F");
-
-*/
-  // LTR303 light sensor measurement
-
-
-  /*Need to ask about how the light sensor works and figure out how best to combine the two*/
-  bool valid;
-  uint16_t visible_plus_ir, infrared;
-
-  if (ltr.newDataAvailable()) {
-    ltr.readBothChannels(visible_plus_ir, infrared);
-    
-      Serial.print("Visible + IR: ");
-      Serial.println(visible_plus_ir);
-      Serial.print("Infrared: ");
-      Serial.println(infrared);
-    
-  }
-  Serial.println(visible_plus_ir);
-  
-/*
-  if (test == 0) {
-  controlBlinds(temperatureFahrenheit, visible_plus_ir);
-  test++;
-  } else if (test == 2) {
-    test = 0;
-  } 
-  */
+  temperatureFahrenheit = sensorTemperatureData();
+  visible_plus_ir = sensorLightData();
 
   delay(2000);
   
@@ -172,8 +135,6 @@ temperatureFahrenheit = sensorTemperatureData();
 
   matrix.loadFrame(heart);
   delay(500);
-
-
 }
 
 float sensorTemperatureData() {
@@ -191,8 +152,16 @@ float sensorTemperatureData() {
  return temperatureFahrenheit;
 }
 
-void sensorLightData(){
-    return; //uint_16
+uint16_t sensorLightData() {
+    if (ltr.newDataAvailable()) {
+      ltr.readBothChannels(visible_plus_ir, infrared);
+    
+      Serial.print("Visible + IR: ");
+      Serial.println(visible_plus_ir);
+    
+  }
+  Serial.println(visible_plus_ir);
+  return visible_plus_ir;
 }
 
 
@@ -370,10 +339,8 @@ int getUserTemp() {
 //Display Sensor Data
 String getData()
 {
-  sensorTemp = getTemperature();
-  sensorLight = getLight();
-  String s_temp = String(sensorTemp);
-  String s_light = String(sensorLight);
+  String s_temp = String(temperatureFahrenheit);
+  String s_light = String(visible_plus_ir);
   return String("{\"temperature\": ") + s_temp + String(", \"light\": ") + s_light + String("}");
 }
 
