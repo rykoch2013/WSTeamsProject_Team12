@@ -129,47 +129,34 @@ void loop() {
 
 void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
     
-    bool alreadyRun = false;
+    // bool alreadyRun = false;
     Serial.println(blackout_position);
     Serial.println(permeable_position);
 
-    
-
-    if (temperatureFahrenheit >= 76 && temperatureFahrenheit <= 79) {
-      permeable_position = 0; // Lower permeable to home
-      Serial.println("Lower perm");
-      alreadyRun = true;
-    } else if (temperatureFahrenheit >= 80 && temperatureFahrenheit <= 100) {
-      blackout_position = 0; // Lower blackout to home
-      Serial.println("Lower Blackout");
-      alreadyRun = true;
-    } else if (temperatureFahrenheit >= 1 && temperatureFahrenheit <= 75) {
-      blackout_position = -60000; // raise
-      permeable_position = -80000;
-      Serial.println("Simulate raise perm - temp");
-      alreadyRun = true;
-    } 
-
-    Serial.println(blackout_position);
-
-
-    // if no changes were made in temp, check light intensity
-    if (alreadyRun == false) {
-    if (visible_plus_ir >= 5000 && visible_plus_ir <= 10000) {
+    if (visible_plus_ir >= 5000) {
       blackout_position = 0; // Lower blackout to home
       Serial.println("Simulate Lower black - light");
     } else if (visible_plus_ir >= 1000 && visible_plus_ir <= 4999) {
       permeable_position = 0; // Lower permeable to home
       Serial.println("Simulate Lower perm - light");
-    } else if (visible_plus_ir == 0) {
+    } else if (visible_plus_ir <= 5) {
       blackout_position = -60000; // Raise blackout to up position
-    } else if (visible_plus_ir < 50) {
-      permeable_position = -80000; // Raise permeable to up position
-      Serial.println("Simulate raise perm - light");
-    }
-    Serial.println(blackout_position);
-
-    }
+      permeable_position = -80000;
+    } else if (temperatureFahrenheit >= 76 && temperatureFahrenheit <= 79) {
+      permeable_position = 0; // Lower permeable to home
+      Serial.println("Lower perm");
+      // alreadyRun = true;
+    } else if (temperatureFahrenheit >= 80 && temperatureFahrenheit <= 100) {
+      blackout_position = 0; // Lower blackout to home
+      Serial.println("Lower Blackout");
+      // alreadyRun = true;
+    } else if (temperatureFahrenheit >= 1 && temperatureFahrenheit <= 75) {
+      blackout_position = -60000; // raise
+      permeable_position = -80000;
+      Serial.println("Simulate raise perm - temp");
+      // alreadyRun = true;
+    } 
+    
 
     // Execute commands for controlling blinds based on positions
         stepper1.runToNewPosition(blackout_position);
