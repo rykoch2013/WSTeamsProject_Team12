@@ -136,6 +136,9 @@ float temperatureFahrenheit = sensorTemperatureData();
 
 */
   // LTR303 light sensor measurement
+
+
+  /*Need to ask about how the light sensor works and figure out how best to combine the two*/
   bool valid;
   uint16_t visible_plus_ir, infrared;
 
@@ -185,7 +188,7 @@ float sensorTemperatureData() {
  return temperatureFahrenheit;
 }
 
-void sensorLightData()
+void sensorLightData(){}
 
 
 
@@ -260,7 +263,7 @@ void parseData(String jsonString)
     {"light": 50}
     {"mode": 0}
   */
-  
+
   if(jsonString.indexOf("temp") != -1)
   {// is something like {"temp": 75}
     int posTemp = jsonString.indexOf("temp") + 6;       
