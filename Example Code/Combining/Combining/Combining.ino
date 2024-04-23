@@ -2,7 +2,6 @@
 #include <Adafruit_TMP117.h>
 #include <Adafruit_LTR329_LTR303.h>
 #include <AccelStepper.h>
-#include <ArduinoBLE.h>
 #include "Arduino_LED_Matrix.h"
 
 #include <WiFiS3.h>
@@ -32,11 +31,15 @@ Adafruit_LTR303 ltr;
 ArduinoLEDMatrix matrix;
 
 //Blind Positions
-int perm_Lower = 85000;
-int perm_Raise = -85000;
-int BO_Raise = -63000;
-int BO_Lower = 63000;
+int home_Position = 0;
+int perm_Raise = -80000;
+int BO_Raise = -60000;
 
+
+
+int blackout_position;
+int permeable_position;
+float temperatureFahrenheit;
 int test = 0;
 
 
@@ -121,7 +124,7 @@ void stepperSetup() {
 
 void stepperLoop() {
 
-float temperatureFahrenheit = sensorTemperatureData();
+temperatureFahrenheit = sensorTemperatureData();
 /*
       // TMP117 temperature measurement
   sensors_event_t temp;
@@ -188,52 +191,38 @@ float sensorTemperatureData() {
  return temperatureFahrenheit;
 }
 
-void sensorLightData(){}
+void sensorLightData(){
+    return; //uint_16
+}
 
 
 
 void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
     //controlBlinds(int temperatureFahrenheit, int visible_plus_ir, int userDesiredTemp, int userDesiredLight)
     //Need to incorperate into switch statements w/o breaking things.
-    int blackout_position = 0;
-    int permeable_position = 0;
 
 
-    // Check temperature conditions
-    switch (temperatureFahrenheit) {
-        case 70 ... 74:
-            permeable_position = perm_Lower; // Lower permeable to home
-            break;
-        case 75 ... 100:
-            blackout_position = BO_Lower; // Lower blackout to home
-            break;
-        case 1 ... 69:
-            blackout_position = BO_Raise;
-            permeable_position = perm_Raise;
-            break;
-        default:
-            // Temperature is below 70, raise all to up position
-            blackout_position = 0;
-            permeable_position = 0;
-            break;
-    }
-
-    // Check visible_plus_ir conditions
-    switch (visible_plus_ir) {
-        case 9000 ... 15000:
-            blackout_position = BO_Lower; // Lower blackout to home
-            break;
-        case 5000 ... 8999:
-            permeable_position = perm_Lower; // Lower permeable to home
-            break;
-        case 0:
-            permeable_position = perm_Raise; // Raise permeable to up position
-            break;
-        default:
-            if (visible_plus_ir < 50)
-                blackout_position = BO_Raise; // Raise blackout to up position
-            break;
-    }
+    if (visible_plus_ir >= 5000) {
+      blackout_position = home_Position; // Lower blackout to home
+      Serial.println("Simulate Lower black - light");
+    } else if (visible_plus_ir >= 1000 && visible_plus_ir <= 4999) {
+      permeable_position = home_Position; // Lower permeable to home
+      Serial.println("Simulate Lower perm - light");
+    } else if (visible_plus_ir <= 5) {
+      blackout_position = BO_Raise; // Raise blackout to up position
+      permeable_position = perm_Raise;
+    } else if (temperatureFahrenheit >= 76 && temperatureFahrenheit <= 79) {
+      permeable_position = home_Position; // Lower permeable to home
+      Serial.println("Lower perm");
+    } else if (temperatureFahrenheit >= 80 && temperatureFahrenheit <= 100) {
+      blackout_position = home_Position; // Lower blackout to home
+      Serial.println("Lower Blackout");
+    
+    } else if (temperatureFahrenheit >= 1 && temperatureFahrenheit <= 75) {
+      blackout_position = BO_Raise; // raise
+      permeable_position = perm_Raise;
+      Serial.println("Simulate raise perm - temp");
+    } 
 
     // Execute commands for controlling blinds based on positions
 
@@ -247,6 +236,7 @@ void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
 }
 
 void changeBlindPosition(int blackout_position, int permeable_position) {
+    //remove if statements. Just go to new position
     if (blackout_position != 0)
         stepper1.runToNewPosition(blackout_position);
     if (permeable_position != 0)
@@ -294,6 +284,8 @@ void parseData(String jsonString)
 
     //good spot for sensor data
 
+    //FOr light comparison 100% will be 10,000 lumen
+
     Serial.print("Light: ");
     Serial.println(userLight);
   }
@@ -334,7 +326,7 @@ void parseData(String jsonString)
         Serial.println("SEMI");
         //BO UP
         //SEMI DOWN
-        changeBlindPosition(BO_Raise, perm_Lower);
+        changeBlindPosition(BO_Raise, home_Position);
 
       }
       break;
@@ -342,7 +334,7 @@ void parseData(String jsonString)
       {
         Serial.println("BLACKOUT");
         //ALL DOWN
-        changeBlindPosition(BO_Lower, perm_Lower);
+        changeBlindPosition(home_Position, home_Position);
       }
       break;
       default:
