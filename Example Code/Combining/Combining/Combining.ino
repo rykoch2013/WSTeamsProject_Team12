@@ -290,30 +290,6 @@ void parseData(String jsonString)
   } 
 }
 
-//for sensor temp readings
-int getTemperature()
-{
-  //  simulate the temperature value
-  int temp_x100 = random(0, 10000); // a ramdom value from 0 to 10000
-  return temp_x100 / 100;             // return the simulated temperature value from 0 to 100 in float
-}
-
-//for sensor Light readings
-int getLight()
-{
-  //  simulate the light value
-  int light_x100 = random(0, 10000); 
-  return light_x100 / 100;
-}
-
-int getUserLight() {
-  return userLight;
-}
-
-int getUserTemp() {
-  return userTemp;
-}
-
 //Display Sensor Data
 String getData()
 {
@@ -447,6 +423,7 @@ void wifiLoop(){
         client.flush();
         delay(10);
         // close the connection:
+
         client.stop();
       }
     }
