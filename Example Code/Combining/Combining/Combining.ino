@@ -206,9 +206,7 @@ void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
 
 void changeBlindPosition(int blackout_position, int permeable_position) {
     //remove if statements. Just go to new position
-    if (blackout_position != 0)
         stepper1.runToNewPosition(blackout_position);
-    if (permeable_position != 0)
         stepper2.runToNewPosition(permeable_position);
 }
 
@@ -286,7 +284,8 @@ void parseData(String jsonString)
       {
         Serial.println("UP");
         //ALL UP
-        changeBlindPosition(BO_Raise, perm_Raise);
+        Serial.println("Up called");
+        //changeBlindPosition(BO_Raise, perm_Raise);
 
       }
       break;
@@ -295,7 +294,9 @@ void parseData(String jsonString)
         Serial.println("SEMI");
         //BO UP
         //SEMI DOWN
-        changeBlindPosition(BO_Raise, home_Position);
+        Serial.println("Semi called");
+        //changeBlindPosition(BO_Raise, home_Position);
+        
 
       }
       break;
@@ -303,7 +304,8 @@ void parseData(String jsonString)
       {
         Serial.println("BLACKOUT");
         //ALL DOWN
-        changeBlindPosition(home_Position, home_Position);
+        //changeBlindPosition(home_Position, home_Position);
+        Serial.println("Blackout called");
       }
       break;
       default:
