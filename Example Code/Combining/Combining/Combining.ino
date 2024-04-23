@@ -36,13 +36,13 @@ int home_Position = 0;
 int perm_Raise = -80000;
 int BO_Raise = -60000;
 
-
-
 int blackout_position;
 int permeable_position;
-float temperatureFahrenheit;
+int temperatureFahrenheit;
 uint16_t visible_plus_ir, infrared;
 int test = 0;
+
+
 
 
 
@@ -133,149 +133,6 @@ void stepperSetup() {
     stepper2.setAcceleration(3600); //ACCELERATION = Steps /(second)^2
 }
 
-void stepperLoop() {
-
-  temperatureFahrenheit = sensorTemperatureData();
-  visible_plus_ir = sensorLightData();
-
-  delay(2000);
-  
-  matrix.loadFrame(happy);
-  delay(500);
-
-  matrix.loadFrame(heart);
-  delay(500);
-}
-
-float sensorTemperatureData() {
-    // TMP117 temperature measurement
-  sensors_event_t temp;
-  tmp117.getEvent(&temp);
-
-  // Convert Celsius to Fahrenheit
-  float temperatureFahrenheit = (temp.temperature * 9 / 5) + 32;
-
-  Serial.print("Temperature: ");
-  Serial.print(temperatureFahrenheit);
-  Serial.println(" degrees F");
-
- return temperatureFahrenheit;
-}
-
-uint16_t sensorLightData() {
-    if (ltr.newDataAvailable()) {
-      ltr.readBothChannels(visible_plus_ir, infrared);
-    
-      Serial.print("Visible + IR: ");
-      Serial.println(visible_plus_ir);
-    
-  }
-  Serial.println(visible_plus_ir);
-  return visible_plus_ir;
-}
-
-
-
-void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
-    //controlBlinds(int temperatureFahrenheit, int visible_plus_ir, int userDesiredTemp, int userDesiredLight)
-    //Need to incorperate into switch statements w/o breaking things.
-
-
-    if (visible_plus_ir >= 5000) {
-      blackout_position = home_Position; // Lower blackout to home
-      Serial.println("Simulate Lower black - light");
-    } else if (visible_plus_ir >= 1000 && visible_plus_ir <= 4999) {
-      permeable_position = home_Position; // Lower permeable to home
-      Serial.println("Simulate Lower perm - light");
-    } else if (visible_plus_ir <= 5) {
-      blackout_position = BO_Raise; // Raise blackout to up position
-      permeable_position = perm_Raise;
-    } else if (temperatureFahrenheit >= 76 && temperatureFahrenheit <= 79) {
-      permeable_position = home_Position; // Lower permeable to home
-      Serial.println("Lower perm");
-    } else if (temperatureFahrenheit >= 80 && temperatureFahrenheit <= 100) {
-      blackout_position = home_Position; // Lower blackout to home
-      Serial.println("Lower Blackout");
-    
-    } else if (temperatureFahrenheit >= 1 && temperatureFahrenheit <= 75) {
-      blackout_position = BO_Raise; // raise
-      permeable_position = perm_Raise;
-      Serial.println("Simulate raise perm - temp");
-    } 
-
-    // Execute commands for controlling blinds based on positions
-
-    changeBlindPosition(blackout_position, permeable_position);
-}
-
-void changeBlindPosition(int blackout_position, int permeable_position) {
-    //remove if statements. Just go to new position
-        stepper1.runToNewPosition(blackout_position);
-        stepper2.runToNewPosition(permeable_position);
-}
-
-
-
-
-//WIFI Code
-void parseData(String jsonString)
-{ 
-  if(jsonString.indexOf("temp") != -1)
-  {// is something like {"temp": 75}
-    int posTemp = jsonString.indexOf("temp") + 6;       
-    String tempString = jsonString.substring(posTemp);
-    int commaTemp = tempString.indexOf(",");
-    tempString = tempString.substring(0, commaTemp);
-
-    Serial.print("tempString: ");
-    Serial.print(tempString);
-    Serial.print("\n");
-    userTemp = tempString.toInt(); // received temp value
-
-    Serial.print("Temperature: ");
-    Serial.println(userTemp);
-
-    //Good spot for sensor data
-
-  }
-
-  else if(jsonString.indexOf("light") != -1)
-  {// is something like {"light": 50}
-    int posLight = jsonString.indexOf("light") + 7;
-    String lightString = jsonString.substring(posLight);
-    int commaLight = lightString.indexOf(",");
-    lightString = lightString.substring(0, commaLight);
-    
-    userLight = lightString.toInt(); // received light value
-
-    //good spot for sensor data
-
-    //FOr light comparison 100% will be 10,000 lumen
-
-    Serial.print("Light: ");
-    Serial.println(userLight);
-  }
-
-  else if(jsonString.indexOf("mode") != -1)
-  {// is something like {"mode": 0}
-    int posMode = jsonString.indexOf("mode") + 7;
-    String modeString = jsonString.substring(posMode);
-    int commaMode = modeString.indexOf(",");
-    modeString = modeString.substring(0, commaMode);
-    
-    userMode = modeString.toInt(); // received mode value
-    modechange = true;
-  } 
-}
-
-//Display Sensor Data
-String getData()
-{
-  String s_temp = String(temperatureFahrenheit);
-  String s_light = String(visible_plus_ir);
-  return String("{\"temperature\": ") + s_temp + String(", \"light\": ") + s_light + String("}");
-}
-
 void wifiSetup(){
   // Initialize serial and wait for port to open:
   Serial.begin(9600);
@@ -300,6 +157,20 @@ void wifiSetup(){
   Serial.println("Connected");
   printWifiStatus();
 
+}
+
+void stepperLoop() {
+
+  temperatureFahrenheit = sensorTemperatureData();
+  visible_plus_ir = sensorLightData();
+
+  delay(2000);
+  
+  matrix.loadFrame(happy);
+  delay(500);
+
+  matrix.loadFrame(heart);
+  delay(500);
 }
 
 void wifiLoop(){
@@ -405,6 +276,132 @@ void wifiLoop(){
   }
 
 }
+
+int sensorTemperatureData() {
+    // TMP117 temperature measurement
+  sensors_event_t temp;
+  tmp117.getEvent(&temp);
+
+  // Convert Celsius to Fahrenheit
+  int temperatureFahrenheit = (temp.temperature * 9 / 5) + 32;
+
+  Serial.print("Temperature: ");
+  Serial.print(temperatureFahrenheit);
+  Serial.println(" degrees F");
+
+ return temperatureFahrenheit;
+}
+
+uint16_t sensorLightData() {
+    if (ltr.newDataAvailable()) {
+      ltr.readBothChannels(visible_plus_ir, infrared);
+    
+      Serial.print("Visible + IR: ");
+      Serial.println(visible_plus_ir);
+    
+  }
+  Serial.println(visible_plus_ir);
+  return visible_plus_ir;
+}
+
+
+void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
+    //controlBlinds(int temperatureFahrenheit, int visible_plus_ir, int userDesiredTemp, int userDesiredLight)
+    //Need to incorperate into switch statements w/o breaking things.
+
+
+    if (visible_plus_ir >= 5000) {
+      blackout_position = home_Position; // Lower blackout to home
+      Serial.println("Simulate Lower black - light");
+    } else if (visible_plus_ir >= 1000 && visible_plus_ir <= 4999) {
+      permeable_position = home_Position; // Lower permeable to home
+      Serial.println("Simulate Lower perm - light");
+    } else if (visible_plus_ir <= 5) {
+      blackout_position = BO_Raise; // Raise blackout to up position
+      permeable_position = perm_Raise;
+    } else if (temperatureFahrenheit >= 76 && temperatureFahrenheit <= 79) {
+      permeable_position = home_Position; // Lower permeable to home
+      Serial.println("Lower perm");
+    } else if (temperatureFahrenheit >= 80 && temperatureFahrenheit <= 100) {
+      blackout_position = home_Position; // Lower blackout to home
+      Serial.println("Lower Blackout");
+    
+    } else if (temperatureFahrenheit >= 1 && temperatureFahrenheit <= 75) {
+      blackout_position = BO_Raise; // raise
+      permeable_position = perm_Raise;
+      Serial.println("Simulate raise perm - temp");
+    } 
+
+    // Execute commands for controlling blinds based on positions
+
+    changeBlindPosition(blackout_position, permeable_position);
+}
+
+void changeBlindPosition(int blackout_position, int permeable_position) {
+    //remove if statements. Just go to new position
+        stepper1.runToNewPosition(blackout_position);
+        stepper2.runToNewPosition(permeable_position);
+}
+
+//WIFI Code
+void parseData(String jsonString)
+{ 
+  if(jsonString.indexOf("temp") != -1)
+  {// is something like {"temp": 75}
+    int posTemp = jsonString.indexOf("temp") + 6;       
+    String tempString = jsonString.substring(posTemp);
+    int commaTemp = tempString.indexOf(",");
+    tempString = tempString.substring(0, commaTemp);
+
+    Serial.print("tempString: ");
+    Serial.print(tempString);
+    Serial.print("\n");
+    userTemp = tempString.toInt(); // received temp value
+
+    Serial.print("Temperature: ");
+    Serial.println(userTemp);
+
+    //Good spot for sensor data
+
+  }
+
+  else if(jsonString.indexOf("light") != -1)
+  {// is something like {"light": 50}
+    int posLight = jsonString.indexOf("light") + 7;
+    String lightString = jsonString.substring(posLight);
+    int commaLight = lightString.indexOf(",");
+    lightString = lightString.substring(0, commaLight);
+    
+    userLight = lightString.toInt(); // received light value
+
+    //good spot for sensor data
+
+    //FOr light comparison 100% will be 10,000 lumen
+
+    Serial.print("Light: ");
+    Serial.println(userLight);
+  }
+
+  else if(jsonString.indexOf("mode") != -1)
+  {// is something like {"mode": 0}
+    int posMode = jsonString.indexOf("mode") + 7;
+    String modeString = jsonString.substring(posMode);
+    int commaMode = modeString.indexOf(",");
+    modeString = modeString.substring(0, commaMode);
+    
+    userMode = modeString.toInt(); // received mode value
+    modechange = true;
+  } 
+}
+
+//Display Sensor Data
+String getData()
+{
+  String s_temp = String(temperatureFahrenheit);
+  String s_light = String(visible_plus_ir);
+  return String("{\"temperature\": ") + s_temp + String(", \"light\": ") + s_light + String("}");
+}
+
 
 void printWifiStatus()
 {
