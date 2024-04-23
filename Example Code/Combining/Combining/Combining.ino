@@ -120,6 +120,9 @@ void stepperSetup() {
 }
 
 void stepperLoop() {
+
+float temperatureFahrenheit = sensorTemperatureData();
+/*
       // TMP117 temperature measurement
   sensors_event_t temp;
   tmp117.getEvent(&temp);
@@ -131,6 +134,7 @@ void stepperLoop() {
   Serial.print(temperatureFahrenheit);
   Serial.println(" degrees F");
 
+*/
   // LTR303 light sensor measurement
   bool valid;
   uint16_t visible_plus_ir, infrared;
@@ -165,6 +169,25 @@ void stepperLoop() {
 
 
 }
+
+float sensorTemperatureData() {
+    // TMP117 temperature measurement
+  sensors_event_t temp;
+  tmp117.getEvent(&temp);
+
+  // Convert Celsius to Fahrenheit
+  float temperatureFahrenheit = (temp.temperature * 9 / 5) + 32;
+
+  Serial.print("Temperature: ");
+  Serial.print(temperatureFahrenheit);
+  Serial.println(" degrees F");
+
+ return temperatureFahrenheit;
+}
+
+void sensorLightData()
+
+
 
 void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
     //controlBlinds(int temperatureFahrenheit, int visible_plus_ir, int userDesiredTemp, int userDesiredLight)
@@ -237,6 +260,7 @@ void parseData(String jsonString)
     {"light": 50}
     {"mode": 0}
   */
+  
   if(jsonString.indexOf("temp") != -1)
   {// is something like {"temp": 75}
     int posTemp = jsonString.indexOf("temp") + 6;       
