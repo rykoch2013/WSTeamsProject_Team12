@@ -267,50 +267,21 @@ void parseData(String jsonString)
     userMode = modeString.toInt(); // received mode value
 
     Serial.print("Mode: ");
-    switch(userMode)
-    {
-      case 0:
-      {
+    if (userMode == 0) {
         Serial.println("AUTO");
-        //run sensor comparison
         
-        //controlBlinds(temperatureFahrenheit(sensorData), visible_plus_ir(sensorData));
-        
-        //controlBlinds(temperatureFahrenheit(sensorData), visible_plus_ir(sensorData), userDesiredTemp, userDesiredLight)
-
-      }
-      break;
-      case 1:
-      {
+    } else if (userMode == 1) {
         Serial.println("UP");
-        //ALL UP
-        Serial.println("Up called");
-        //changeBlindPosition(BO_Raise, perm_Raise);
-
-      }
-      break;
-      case 2:
-      {
+        changeBlindPosition(BO_Raise, perm_Raise);
+    } else if (userMode == 2) {
         Serial.println("SEMI");
-        //BO UP
-        //SEMI DOWN
-        Serial.println("Semi called");
-        //changeBlindPosition(BO_Raise, home_Position);
-        
+        changeBlindPosition(BO_Raise, home_Position);
 
-      }
-      break;
-      case 3:
-      {
+    } else if (userMode == 3) {
         Serial.println("BLACKOUT");
-        //ALL DOWN
-        //changeBlindPosition(home_Position, home_Position);
-        Serial.println("Blackout called");
-      }
-      break;
-      default:
-      break;
+        changeBlindPosition(home_Position, home_Position);
     }
+    
   } 
 }
 
