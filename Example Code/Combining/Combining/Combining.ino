@@ -287,12 +287,18 @@ void parseData(String jsonString)
       {
         Serial.println("AUTO");
         //run sensor comparison
+        
+        //controlBlinds(temperatureFahrenheit(sensorData), visible_plus_ir(sensorData));
+        
+        //controlBlinds(temperatureFahrenheit(sensorData), visible_plus_ir(sensorData), userDesiredTemp, userDesiredLight)
+
       }
       break;
       case 1:
       {
         Serial.println("UP");
         //ALL UP
+        changeBlindPosition(BO_Raise, perm_Raise);
 
       }
       break;
@@ -301,12 +307,15 @@ void parseData(String jsonString)
         Serial.println("SEMI");
         //BO UP
         //SEMI DOWN
+        changeBlindPosition(BO_Raise, perm_Lower);
+
       }
       break;
       case 3:
       {
         Serial.println("BLACKOUT");
         //ALL DOWN
+        changeBlindPosition(BO_Lower, perm_Lower);
       }
       break;
       default:
