@@ -414,8 +414,9 @@ void parseData(String jsonString)
 //Display Sensor Data
 String getData()
 {
+  int dispLight = visible_plus_ir/100;
   String s_temp = String(temperatureFahrenheit);
-  String s_light = String(visible_plus_ir);
+  String s_light = String(dispLight);
   return String("{\"temperature\": ") + s_temp + String(", \"light\": ") + s_light + String("}");
 }
 
