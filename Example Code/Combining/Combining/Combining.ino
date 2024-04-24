@@ -66,35 +66,37 @@ void loop() {
     stepperLoop();
     wifiLoop();
 
-    //overrideCheck();
-    controlBlinds(temperatureFahrenheit, visible_plus_ir);
+    overrideCheck();
+    //controlBlinds(temperatureFahrenheit, visible_plus_ir);
 }
 
 void overrideCheck() {
+  Serial.println("overrideCheck");
   if (modechange){
     Serial.println("ModeChange Detected");
     Serial.print("Mode: ");
     if (userMode == 0) {
-      Serial.println("AUTO");
-      controlBlinds(temperatureFahrenheit, visible_plus_ir);
-      autoMode = true;        
-    } else if (userMode == 1) {
-      Serial.println("UP");
-      changeBlindPosition(BO_Raise, perm_Raise);
-      autoMode = false;
-    } else if (userMode == 2) {
-      Serial.println("SEMI");
-      changeBlindPosition(BO_Raise, home_Position);
-      autoMode = false;
-    } else if (userMode == 3) {
-      Serial.println("BLACKOUT");
-      changeBlindPosition(home_Position, home_Position);
-      autoMode = false;
-    } else if(autoMode) {
-      controlBlinds(temperatureFahrenheit, visible_plus_ir);
-    }
+        Serial.println("AUTO");
+        controlBlinds(temperatureFahrenheit, visible_plus_ir);
+        autoMode = true;        
+      } else if (userMode == 1) {
+        Serial.println("UP");
+        changeBlindPosition(BO_Raise, perm_Raise);
+        autoMode = false;
+      } else if (userMode == 2) {
+        Serial.println("SEMI");
+        changeBlindPosition(BO_Raise, home_Position);
+        autoMode = false;
+      } else if (userMode == 3) {
+        Serial.println("BLACKOUT");
+        changeBlindPosition(home_Position, home_Position);
+        autoMode = false;
+      } 
       modechange = false;
-    }
+  }else if(autoMode) {
+    Serial.println("autoMode Detected");
+  controlBlinds(temperatureFahrenheit, visible_plus_ir);
+  }
 
 }
 
