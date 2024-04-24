@@ -21,6 +21,7 @@ int sensorTemp, sensorLight;
 int userTemp, userLight;
 uint8_t userMode;
 bool modechange = false;
+bool autoMode = true;
 
 
 //Stepper & Sensor Controls
@@ -44,12 +45,9 @@ int test = 0;
 
 
 
-
-
 void setup() {
     stepperSetup();
     wifiSetup();
-
 }
 
 //Fun heart display stuff
@@ -68,24 +66,32 @@ void loop() {
     stepperLoop();
     wifiLoop();
 
-    overrideCheck();
+    //overrideCheck();
+    controlBlinds(temperatureFahrenheit, visible_plus_ir);
 }
 
 void overrideCheck() {
   if (modechange){
+    Serial.println("ModeChange Detected");
     Serial.print("Mode: ");
     if (userMode == 0) {
       Serial.println("AUTO");
-      controlBlinds(temperatureFahrenheit, visible_plus_ir);        
+      controlBlinds(temperatureFahrenheit, visible_plus_ir);
+      autoMode = true;        
     } else if (userMode == 1) {
       Serial.println("UP");
       changeBlindPosition(BO_Raise, perm_Raise);
+      autoMode = false;
     } else if (userMode == 2) {
       Serial.println("SEMI");
       changeBlindPosition(BO_Raise, home_Position);
+      autoMode = false;
     } else if (userMode == 3) {
       Serial.println("BLACKOUT");
       changeBlindPosition(home_Position, home_Position);
+      autoMode = false;
+    } else if(autoMode) {
+      controlBlinds(temperatureFahrenheit, visible_plus_ir);
     }
       modechange = false;
     }
@@ -316,18 +322,22 @@ void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
 
     if (visible_plus_ir >= 5000) {
       blackout_position = home_Position; // Lower blackout to home
+      permeable_position = home_Position; 
       Serial.println("Simulate Lower black - light");
     } else if (visible_plus_ir >= 1000 && visible_plus_ir <= 4999) { // 
       permeable_position = home_Position; // Lower permeable to home
+      blackout_position = BO_Raise;
       Serial.println("Simulate Lower perm - light");
     } else if (visible_plus_ir <= 5) {
       blackout_position = BO_Raise; // Raise blackout to up position
       permeable_position = perm_Raise;
     } else if (temperatureFahrenheit >= 76 && temperatureFahrenheit <= 79) {
+      blackout_position = BO_Raise;
       permeable_position = home_Position; // Lower permeable to home
       Serial.println("Lower perm");
     } else if (temperatureFahrenheit >= 80 && temperatureFahrenheit <= 100) {
       blackout_position = home_Position; // Lower blackout to home
+      permeable_position = home_Position;
       Serial.println("Lower Blackout");
     
     } else if (temperatureFahrenheit >= 1 && temperatureFahrenheit <= 75) {
