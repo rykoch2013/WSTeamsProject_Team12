@@ -18,7 +18,7 @@ const char index_html[] PROGMEM = R"rawliteral(<!DOCTYPE html><html lang="en"><h
 WiFiServer server(80);
 
 int sensorTemp, sensorLight;
-int userTemp, userLight; //Currently Unused. Please look through code and rename
+int userTemp, userLight;
 uint8_t userMode;
 bool modechange = false;
 
@@ -68,25 +68,28 @@ void loop() {
     stepperLoop();
     wifiLoop();
 
-    if (modechange)
-    {
-      Serial.print("Mode: ");
-      if (userMode == 0) {
-          Serial.println("AUTO");
-          
-      } else if (userMode == 1) {
-          Serial.println("UP");
-          changeBlindPosition(BO_Raise, perm_Raise);
-      } else if (userMode == 2) {
-          Serial.println("SEMI");
-          changeBlindPosition(BO_Raise, home_Position);
+    overrideCheck();
+}
 
-      } else if (userMode == 3) {
-          Serial.println("BLACKOUT");
-          changeBlindPosition(home_Position, home_Position);
-      }
+void overrideCheck() {
+  if (modechange){
+    Serial.print("Mode: ");
+    if (userMode == 0) {
+      Serial.println("AUTO");
+      controlBlinds(temperatureFahrenheit, visible_plus_ir);        
+    } else if (userMode == 1) {
+      Serial.println("UP");
+      changeBlindPosition(BO_Raise, perm_Raise);
+    } else if (userMode == 2) {
+      Serial.println("SEMI");
+      changeBlindPosition(BO_Raise, home_Position);
+    } else if (userMode == 3) {
+      Serial.println("BLACKOUT");
+      changeBlindPosition(home_Position, home_Position);
+    }
       modechange = false;
     }
+
 }
 
 void stepperSetup() {
@@ -306,14 +309,15 @@ uint16_t sensorLightData() {
 
 
 void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
-    //controlBlinds(int temperatureFahrenheit, int visible_plus_ir, int userDesiredTemp, int userDesiredLight)
     //Need to incorperate into switch statements w/o breaking things.
+
+    int desiredIR = userLight * 10000; // convert userLight to lumens for comparison. 10000 = 100%
 
 
     if (visible_plus_ir >= 5000) {
       blackout_position = home_Position; // Lower blackout to home
       Serial.println("Simulate Lower black - light");
-    } else if (visible_plus_ir >= 1000 && visible_plus_ir <= 4999) {
+    } else if (visible_plus_ir >= 1000 && visible_plus_ir <= 4999) { // 
       permeable_position = home_Position; // Lower permeable to home
       Serial.println("Simulate Lower perm - light");
     } else if (visible_plus_ir <= 5) {
