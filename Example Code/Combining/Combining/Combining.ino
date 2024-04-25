@@ -231,34 +231,34 @@ void loop() {
     Serial.println(userTemp);
 
     overrideCheck();
-    //controlBlinds(temperatureFahrenheit, visible_plus_ir);
 }
 
 void overrideCheck() {
-  //Serial.println("overrideCheck");
   if (modechange){
     Serial.println("ModeChange Detected");
     Serial.print("Mode: ");
+    
     if (userMode == 0) {
-        Serial.println("AUTO");
-        controlBlinds(temperatureFahrenheit, visible_plus_ir);
-        autoMode = true;        
-      } else if (userMode == 1) {
-        Serial.println("UP");
-        changeBlindPosition(BO_Raise, perm_Raise);
-        autoMode = false;
-      } else if (userMode == 2) {
-        Serial.println("SEMI");
-        changeBlindPosition(BO_Raise, home_Position);
-        autoMode = false;
-      } else if (userMode == 3) {
-        Serial.println("BLACKOUT");
-        changeBlindPosition(home_Position, home_Position);
-        autoMode = false;
-      } 
+      Serial.println("AUTO");
+      controlBlinds(temperatureFahrenheit, visible_plus_ir);
+      autoMode = true;        
+    } else if (userMode == 1) {
+      Serial.println("UP");
+      changeBlindPosition(BO_Raise, perm_Raise);
+      autoMode = false;
+    } else if (userMode == 2) {
+      Serial.println("SEMI");
+      changeBlindPosition(BO_Raise, home_Position);
+      autoMode = false;
+    } else if (userMode == 3) {
+      Serial.println("BLACKOUT");
+      changeBlindPosition(home_Position, home_Position);
+      autoMode = false;
+    } 
+    
       modechange = false;
+  
   }else if(autoMode) {
-    //Serial.println("autoMode Detected");
   controlBlinds(temperatureFahrenheit, visible_plus_ir);
   }
 
@@ -364,6 +364,7 @@ void wifiLoop(){
         break;
       }
     }
+
     if (HTTP_req.indexOf("POST") != -1)
     {
       String body = "";
@@ -405,6 +406,7 @@ void wifiLoop(){
       delay(10);
       client.stop();
     }
+    
     // read the HTTP request header line by line
     while (client.connected())
     {
@@ -481,10 +483,8 @@ uint16_t sensorLightData() {
 
 
 void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
-    //Need to incorperate into switch statements w/o breaking things.
 
     int desiredIR = userLight * 10000; // convert userLight to lumens for comparison. 10000 = 100%
-
 
     if (visible_plus_ir >= 5000) {
       blackout_position = home_Position; // Lower blackout to home
@@ -495,39 +495,35 @@ void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
       blackout_position = BO_Raise;
       Serial.println("Simulate Lower perm - light");
     } else if (visible_plus_ir <= 5) {
-      blackout_position = BO_Raise; // Raise blackout to up position
+      blackout_position = BO_Raise; 
       permeable_position = perm_Raise;
     } else if (temperatureFahrenheit >= (userTemp - 5) && temperatureFahrenheit < userTemp) {
       blackout_position = BO_Raise;
-      permeable_position = home_Position; // Lower permeable to home
+      permeable_position = home_Position;
       Serial.println("Lower perm");
     } else if (temperatureFahrenheit >= userTemp && temperatureFahrenheit <= 110) {
-      blackout_position = home_Position; // Lower blackout to home
+      blackout_position = home_Position;
       permeable_position = home_Position;
       Serial.println("Lower Blackout");
     
     } else if (temperatureFahrenheit >= 1 && temperatureFahrenheit < (userTemp - 5)) {
-      blackout_position = BO_Raise; // raise
+      blackout_position = BO_Raise; 
       permeable_position = perm_Raise;
       Serial.println("Simulate raise perm - temp");
     } 
 
-    // Execute commands for controlling blinds based on positions
-
     changeBlindPosition(blackout_position, permeable_position);
 }
 
-void changeBlindPosition(int blackout_position, int permeable_position) {
-    //remove if statements. Just go to new position
-        stepper1.runToNewPosition(blackout_position);
-        stepper2.runToNewPosition(permeable_position);
+void changeBlindPosition(int blackout_position, int permeable_position) {  
+  stepper1.runToNewPosition(blackout_position);
+  stepper2.runToNewPosition(permeable_position);
 }
 
 //WIFI Code
 void parseData(String jsonString)
 { 
-  if(jsonString.indexOf("temp") != -1)
-  {// is something like {"temp": 75}
+  if(jsonString.indexOf("temp") != -1) {
     int posTemp = jsonString.indexOf("temp") + 6;       
     String tempString = jsonString.substring(posTemp);
     int commaTemp = tempString.indexOf(",");
@@ -536,31 +532,25 @@ void parseData(String jsonString)
     Serial.print("tempString: ");
     Serial.print(tempString);
     Serial.print("\n");
-    userTemp = tempString.toInt(); // received temp value
+    userTemp = tempString.toInt();
 
     Serial.print("userTemp: ");
     Serial.println(userTemp);
   }
 
-  else if(jsonString.indexOf("light") != -1)
-  {// is something like {"light": 50}
+  else if(jsonString.indexOf("light") != -1) {
     int posLight = jsonString.indexOf("light") + 7;
     String lightString = jsonString.substring(posLight);
     int commaLight = lightString.indexOf(",");
     lightString = lightString.substring(0, commaLight);
     
-    userLight = lightString.toInt(); // received light value
-
-    //good spot for sensor data
-
-    //FOr light comparison 100% will be 10,000 lumen
+    userLight = lightString.toInt();
 
     Serial.print("Light: ");
     Serial.println(userLight);
   }
 
-  else if(jsonString.indexOf("mode") != -1)
-  {// is something like {"mode": 0}
+  else if(jsonString.indexOf("mode") != -1) {
     int posMode = jsonString.indexOf("mode") + 7;
     String modeString = jsonString.substring(posMode);
     int commaMode = modeString.indexOf(",");
@@ -574,9 +564,8 @@ void parseData(String jsonString)
 //Display Sensor Data
 String getData()
 {
-  int dispLight = visible_plus_ir/100;
   String s_temp = String(temperatureFahrenheit);
-  String s_light = String(dispLight);
+  String s_light = String(visible_plus_ir);
   return String("{\"temperature\": ") + s_temp + String(", \"light\": ") + s_light + String("}");
 }
 
