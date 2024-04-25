@@ -13,12 +13,173 @@ const char ssid[] = SECRET_SSID; // change your network SSID (name)
 const char pass[] = SECRET_PASS; // change your network password (use for WPA, or use as key for WEP)
 
 int status = WL_IDLE_STATUS;
-const char index_html[] PROGMEM = R"rawliteral(<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Light and Temp Control</title><style>body{background-color:#1e3799;color:#fff;font-family:Arial,sans-serif;text-align:center}.row{display:flex;justify-content:center;margin-bottom:10px}.title{margin-bottom:5px;margin-top:5px;color:#f5f6fa;font-size:large}.content{color:#f5f6fa;font-size:medium}.c_light{margin-left:2.5rem}.c_temp{margin-right:2.5rem}.button{background-color:#fff;color:#000;padding:10px 20px;border:none;cursor:pointer;width:5rem;margin:5px}.combo{width:10rem;text-align:center}</style></head><body><div class="row"><label class="title">CURRENT</label></div><div class="row"><div class="content c_temp" id="currentTemp">75 F</div><div class="content c_light" id="currentLight">50 %</div></div><div class="row"><label class="title">ACTIVATION</label></div><div class="row"><div class="content c_temp" id="activationTemp">75 F</div><div class="content c_light" id="activationLight">50 %</div></div><div class="row"><button class="button" onclick="raiseTemp()">RAISE</button><button class="button" onclick="raiseLight()">RAISE</button></div><div class="row"><button class="button" onclick="lowerTemp()">LOWER</button><button class="button" onclick="lowerLight()">LOWER</button></div><div class="row"><select class="combo" id="modeSelect" onchange="changeMode()"><option value="0">Auto</option><option value="1">Up</option><option value="2">Semi</option><option value="3">Blackout</option></select></div><script>let temperatureValue=75,lightValue=50,isRequestInProgress=!1;function raiseTemp(){temperatureValue++,document.getElementById("activationTemp").innerText=temperatureValue+" F",sendPostRequest("/temp",{temp:temperatureValue})}function raiseLight(){lightValue++,document.getElementById("activationLight").innerText=lightValue+" %",sendPostRequest("/light",{light:lightValue})}function lowerTemp(){temperatureValue--,document.getElementById("activationTemp").innerText=temperatureValue+" F",sendPostRequest("/temp",{temp:temperatureValue})}function lowerLight(){lightValue--,lightValue<0&&(lightValue=0),document.getElementById("activationLight").innerText=lightValue+" %",sendPostRequest("/light",{light:lightValue})}function changeMode(){sendPostRequest("/mode",{mode:document.getElementById("modeSelect").value})}function sendPostRequest(e,t){isRequestInProgress||(isRequestInProgress=!0,console.log("Sending POST request to "+e+" with data:",t),fetch(e,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(t)}).then((e=>{if(!e.ok)throw new Error("Network response was not ok");return e.json()})).then((e=>{console.log("Response:",e)})).catch((e=>{console.error("There was a problem with the fetch operation:",e)})).finally((()=>{isRequestInProgress=!1})))}function updateCurrentData(){isRequestInProgress||(isRequestInProgress=!0,fetch("/data").then((e=>{if(!e.ok)throw new Error("An error occurred while obtaining the data.");return e.json()})).then((e=>{document.getElementById("currentTemp").textContent=e.temperature,document.getElementById("currentLight").textContent=e.light})).catch((e=>{console.error("Error:",e)})).finally((()=>{isRequestInProgress=!1})))}document.addEventListener("DOMContentLoaded",(function(e){updateCurrentData()})),setInterval(updateCurrentData,5e3);</script></body></html>)rawliteral";
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Light and Temp Control</title>
+        <style>
+            body {
+                background-color: #1e3799;
+                color: #fff;
+                font-family: Arial, sans-serif;
+                text-align: center;
+            }
+            .row {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+            .title {
+                margin-bottom: 5px;
+                margin-top: 5px;
+                color: #f5f6fa;
+                font-size: large;
+            }
+            .content {
+                color: #f5f6fa;
+                font-size: medium;
+            }
+            .c_light {
+                margin-left: 2.5rem;
+            }
+            .c_temp {
+                margin-right: 2.5rem;
+            }
+            .button {
+                background-color: #fff;
+                color: #000;
+                padding: 10px 20px;
+                border: none;
+                cursor: pointer;
+                width: 5rem;
+                margin: 5px;
+            }
+            .combo {
+                width: 10rem;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="row"><label class="title">CURRENT</label></div>
+        <div class="row">
+            <div class="content c_temp" id="currentTemp">80 F</div>
+            <div class="content c_light" id="currentLight">50 %</div>
+        </div>
+        <div class="row"><label class="title">ACTIVATION</label></div>
+        <div class="row">
+            <div class="content c_temp" id="activationTemp">70 F</div>
+            <div class="content c_light" id="activationLight">50 %</div>
+        </div>
+        <div class="row">
+            <button class="button" onclick="raiseTemp()">RAISE</button
+            ><button class="button" onclick="raiseLight()">RAISE</button>
+        </div>
+        <div class="row">
+            <button class="button" onclick="lowerTemp()">LOWER</button
+            ><button class="button" onclick="lowerLight()">LOWER</button>
+        </div>
+        <div class="row">
+            <select class="combo" id="modeSelect" onchange="changeMode()">
+                <option value="0">Auto</option>
+                <option value="1">Up</option>
+                <option value="2">Semi</option>
+                <option value="3">Blackout</option>
+            </select>
+        </div>
+        <script>
+          let temperatureValue = 70,
+  lightValue = 50,
+  isRequestInProgress = !1;
+function raiseTemp() {
+  temperatureValue++,
+    (document.getElementById("activationTemp").innerText =
+      temperatureValue + " F"),
+    sendPostRequest("/temp", { temp: temperatureValue });
+}
+function raiseLight() {
+  lightValue++,
+    (document.getElementById("activationLight").innerText = lightValue + " %"),
+    sendPostRequest("/light", { light: lightValue });
+}
+function lowerTemp() {
+  temperatureValue--,
+    (document.getElementById("activationTemp").innerText =
+      temperatureValue + " F"),
+    sendPostRequest("/temp", { temp: temperatureValue });
+}
+function lowerLight() {
+  lightValue--,
+    lightValue < 0 && (lightValue = 0),
+    (document.getElementById("activationLight").innerText = lightValue + " %"),
+    sendPostRequest("/light", { light: lightValue });
+}
+function changeMode() {
+  sendPostRequest("/mode", {
+    mode: document.getElementById("modeSelect").value,
+  });
+}
+function sendPostRequest(e, t) {
+  isRequestInProgress ||
+    ((isRequestInProgress = !0),
+    console.log("Sending POST request to " + e + " with data:", t),
+    fetch(e, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(t),
+    })
+      .then((e) => {
+        if (!e.ok) throw new Error("Network response was not ok");
+        return e.json();
+      })
+      .then((e) => {
+        console.log("Response:", e);
+      })
+      .catch((e) => {
+        console.error("There was a problem with the fetch operation:", e);
+      })
+      .finally(() => {
+        isRequestInProgress = !1;
+      }));
+}
+function updateCurrentData() {
+  isRequestInProgress ||
+    ((isRequestInProgress = !0),
+    fetch("/data")
+      .then((e) => {
+        if (!e.ok)
+          throw new Error("An error occurred while obtaining the data.");
+        return e.json();
+      })
+      .then((e) => {
+        (document.getElementById("currentTemp").textContent = e.temperature),
+          (document.getElementById("currentLight").textContent = e.light);
+      })
+      .catch((e) => {
+        console.error("Error:", e);
+      })
+      .finally(() => {
+        isRequestInProgress = !1;
+      }));
+}
+document.addEventListener("DOMContentLoaded", function (e) {
+  updateCurrentData();
+}),
+  setInterval(updateCurrentData, 5e3);
+        </script>
+    </body>
+</html>
+)rawliteral";
+
 
 WiFiServer server(80);
 
 int sensorTemp, sensorLight;
-int userTemp, userLight;
+int userTemp = 70;
+int userLight;
 uint8_t userMode;
 bool modechange = false;
 bool autoMode = true;
@@ -66,35 +227,38 @@ void loop() {
     stepperLoop();
     wifiLoop();
 
+    Serial.print("userTemp: ");
+    Serial.println(userTemp);
+
     overrideCheck();
-    //controlBlinds(temperatureFahrenheit, visible_plus_ir);
 }
 
 void overrideCheck() {
-  Serial.println("overrideCheck");
   if (modechange){
     Serial.println("ModeChange Detected");
     Serial.print("Mode: ");
+    
     if (userMode == 0) {
-        Serial.println("AUTO");
-        controlBlinds(temperatureFahrenheit, visible_plus_ir);
-        autoMode = true;        
-      } else if (userMode == 1) {
-        Serial.println("UP");
-        changeBlindPosition(BO_Raise, perm_Raise);
-        autoMode = false;
-      } else if (userMode == 2) {
-        Serial.println("SEMI");
-        changeBlindPosition(BO_Raise, home_Position);
-        autoMode = false;
-      } else if (userMode == 3) {
-        Serial.println("BLACKOUT");
-        changeBlindPosition(home_Position, home_Position);
-        autoMode = false;
-      } 
+      Serial.println("AUTO");
+      controlBlinds(temperatureFahrenheit, visible_plus_ir);
+      autoMode = true;        
+    } else if (userMode == 1) {
+      Serial.println("UP");
+      changeBlindPosition(BO_Raise, perm_Raise);
+      autoMode = false;
+    } else if (userMode == 2) {
+      Serial.println("SEMI");
+      changeBlindPosition(BO_Raise, home_Position);
+      autoMode = false;
+    } else if (userMode == 3) {
+      Serial.println("BLACKOUT");
+      changeBlindPosition(home_Position, home_Position);
+      autoMode = false;
+    } 
+    
       modechange = false;
+  
   }else if(autoMode) {
-    Serial.println("autoMode Detected");
   controlBlinds(temperatureFahrenheit, visible_plus_ir);
   }
 
@@ -200,6 +364,7 @@ void wifiLoop(){
         break;
       }
     }
+
     if (HTTP_req.indexOf("POST") != -1)
     {
       String body = "";
@@ -241,6 +406,7 @@ void wifiLoop(){
       delay(10);
       client.stop();
     }
+    
     // read the HTTP request header line by line
     while (client.connected())
     {
@@ -317,10 +483,8 @@ uint16_t sensorLightData() {
 
 
 void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
-    //Need to incorperate into switch statements w/o breaking things.
 
     int desiredIR = userLight * 10000; // convert userLight to lumens for comparison. 10000 = 100%
-
 
     if (visible_plus_ir >= 5000) {
       blackout_position = home_Position; // Lower blackout to home
@@ -331,39 +495,35 @@ void controlBlinds(int temperatureFahrenheit, int visible_plus_ir) {
       blackout_position = BO_Raise;
       Serial.println("Simulate Lower perm - light");
     } else if (visible_plus_ir <= 5) {
-      blackout_position = BO_Raise; // Raise blackout to up position
+      blackout_position = BO_Raise; 
       permeable_position = perm_Raise;
-    } else if (temperatureFahrenheit >= 76 && temperatureFahrenheit <= 79) {
+    } else if (temperatureFahrenheit >= (userTemp - 5) && temperatureFahrenheit < userTemp) {
       blackout_position = BO_Raise;
-      permeable_position = home_Position; // Lower permeable to home
+      permeable_position = home_Position;
       Serial.println("Lower perm");
-    } else if (temperatureFahrenheit >= 80 && temperatureFahrenheit <= 100) {
-      blackout_position = home_Position; // Lower blackout to home
+    } else if (temperatureFahrenheit >= userTemp && temperatureFahrenheit <= 110) {
+      blackout_position = home_Position;
       permeable_position = home_Position;
       Serial.println("Lower Blackout");
     
-    } else if (temperatureFahrenheit >= 1 && temperatureFahrenheit <= 75) {
-      blackout_position = BO_Raise; // raise
+    } else if (temperatureFahrenheit >= 1 && temperatureFahrenheit < (userTemp - 5)) {
+      blackout_position = BO_Raise; 
       permeable_position = perm_Raise;
       Serial.println("Simulate raise perm - temp");
     } 
 
-    // Execute commands for controlling blinds based on positions
-
     changeBlindPosition(blackout_position, permeable_position);
 }
 
-void changeBlindPosition(int blackout_position, int permeable_position) {
-    //remove if statements. Just go to new position
-        stepper1.runToNewPosition(blackout_position);
-        stepper2.runToNewPosition(permeable_position);
+void changeBlindPosition(int blackout_position, int permeable_position) {  
+  stepper1.runToNewPosition(blackout_position);
+  stepper2.runToNewPosition(permeable_position);
 }
 
 //WIFI Code
 void parseData(String jsonString)
 { 
-  if(jsonString.indexOf("temp") != -1)
-  {// is something like {"temp": 75}
+  if(jsonString.indexOf("temp") != -1) {
     int posTemp = jsonString.indexOf("temp") + 6;       
     String tempString = jsonString.substring(posTemp);
     int commaTemp = tempString.indexOf(",");
@@ -372,34 +532,25 @@ void parseData(String jsonString)
     Serial.print("tempString: ");
     Serial.print(tempString);
     Serial.print("\n");
-    userTemp = tempString.toInt(); // received temp value
+    userTemp = tempString.toInt();
 
-    Serial.print("Temperature: ");
+    Serial.print("userTemp: ");
     Serial.println(userTemp);
-
-    //Good spot for sensor data
-
   }
 
-  else if(jsonString.indexOf("light") != -1)
-  {// is something like {"light": 50}
+  else if(jsonString.indexOf("light") != -1) {
     int posLight = jsonString.indexOf("light") + 7;
     String lightString = jsonString.substring(posLight);
     int commaLight = lightString.indexOf(",");
     lightString = lightString.substring(0, commaLight);
     
-    userLight = lightString.toInt(); // received light value
-
-    //good spot for sensor data
-
-    //FOr light comparison 100% will be 10,000 lumen
+    userLight = lightString.toInt();
 
     Serial.print("Light: ");
     Serial.println(userLight);
   }
 
-  else if(jsonString.indexOf("mode") != -1)
-  {// is something like {"mode": 0}
+  else if(jsonString.indexOf("mode") != -1) {
     int posMode = jsonString.indexOf("mode") + 7;
     String modeString = jsonString.substring(posMode);
     int commaMode = modeString.indexOf(",");
